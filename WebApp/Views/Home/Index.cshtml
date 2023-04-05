@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center" style="background-color: white; padding: 20px;">
+    <h2 class="display-1">Welcome</h2>
+    <p>
+        On behalf of ITC – Abu Dhabi, we're conducting a survey regarding driver behavior in the city of Abu Dhabi. We'd love to get your feedback to help us make improvements for driver behavior. 
+        The survey should only take a couple of minutes, and your responses are completely anonymous.
+    </p>
+    <hr />
+    @*<a href="/Survey/StartSurvey" class="btn btn-lg btn-primary">Start Survey</a>*@
+    <input type="button" value="Start Survey" class="btn btn-lg btn-primary" onclick='window.location.href = "@Url.Action("StartSurvey", "Survey")"' />
+</div>
+

@@ -1,0 +1,12 @@
+﻿
+@{
+    ViewData["Title"] = "SurveyComplete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="text-center">
+    <h1 class="display-1">Thank you</h1>
+    <p>Survey submitted successfully. Thank you for your time.</p>
+    <input type="button" value="Start Survey" class="btn btn-lg btn-primary" onclick='window.location.href = "@Url.Action("Index", "Home")"' />
+</div>
+

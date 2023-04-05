@@ -1,0 +1,178 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using CoreDomain.DataModels.Internal
+@model CoreDomain.ViewModels.SurveyModel.Questionnaire
+@inject SignInManager<ApplicationUser> signInManager
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<partial name="_SurveyInfo" />
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <form asp-action="PostSurvey" onsubmit="validateMyForm();">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @Html.HiddenFor(m => m.StartTime)
+            @Html.HiddenFor(m => m.EndTime)
+            @Html.HiddenFor(m => m.LatLong)
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+                @Html.HiddenFor(m => m.Questions[i].QuestionId)
+                @if (Model.Questions[i].QuestionType == "Section Heading")
+                {
+                    <label asp-for="@Model.Questions[i].QuestionText" class="h1 col-md-12 col-sm-12 col-xs-12">@Model.Questions[i].QuestionText</label>
+                    <hr>
+                }
+                else if (Model.Questions[i].QuestionType == "Open Text")
+                {
+                    <label asp-for="Questions[i].QuestionText" class="h3 col-md-12 col-sm-12 col-xs-12">@Model.Questions[i].QuestionText</label>
+                    @Html.TextBoxFor(m => Model.Questions[i].AnswerText, new { @class = "form-control form-control-lg", @type = "number", @required = "required" })
+                    <span asp-validation-for="@Model.Questions[i].AnswerText" class="text-danger"></span>
+                    <hr>
+                }
+                else if (Model.Questions[i].QuestionType == "Single Select" || Model.Questions[i].QuestionType == "Yes/No" || Model.Questions[i].QuestionType == "Male/Female")
+                {
+                    <label asp-for="Questions[i].QuestionText" class="h3 col-md-12 col-sm-12 col-xs-12">@Model.Questions[i].QuestionText</label>
+                    <div class="row required">
+                        @for (int j = 0; j < Model.Questions[i].Options.Count(); j++)
+                        {
+                            <div class="col-md-3 col-sm-6 col-xs-12 box">
+                                @Html.HiddenFor(m => m.Questions[i].QuestionText)
+                                @Html.HiddenFor(m => m.Questions[i].Options[j].OptionId)
+
+                                @Html.RadioButtonFor(m => m.Questions[i].SelectedId, Model.Questions[i].Options[j].OptionId, new { @class = "form-check-input", @required = "required" })
+                                <label class="h5 form-check-label option-lable" for="Questions[@i].SelectedId">@Model.Questions[i].Options[j].OptionText</label>
+                            </div>
+                        }
+                    </div>
+                    <span asp-validation-for="@Model.Questions[i].QuestionText" class="text-danger"></span>
+                    <hr>
+                }
+                else if (Model.Questions[i].QuestionType == "Multi Select")
+                {
+                    <label asp-for="Questions[i].QuestionText" class="h3 col-md-12 col-sm-12 col-xs-12">@Model.Questions[i].QuestionText</label>
+                    <div class="checkbox-group required">
+                        <div class="row">
+                            @for (int j = 0; j < Model.Questions[i].Options.Count(); j++)
+                            {
+                                <div class="col-md-3 col-sm-6 col-xs-12 box">
+                                    @Html.HiddenFor(m => m.Questions[i].QuestionText)
+                                    @Html.HiddenFor(m => m.Questions[i].Options[j].OptionId)
+                                    @Html.CheckBoxFor(m => m.Questions[i].Options[j].IsSelected, new { @name = @Model.Questions[i].QuestionText, @id = @Model.Questions[i].QuestionId, @class = "form-check-input" })
+                                    <label class="h5 form-check-label option-lable" for="Model.Questions[i].Options[j].OptionId">@Model.Questions[i].Options[j].OptionText</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <span asp-validation-for="@Model.Questions[i].QuestionText" class="text-danger"></span>
+                    <hr>
+                }
+                else if (Model.Questions[i].QuestionType == "Map" && signInManager.IsSignedIn(User))
+                {
+                    <label asp-for="Questions[i].QuestionText" class="h3 col-md-12 col-sm-12 col-xs-12">@Model.Questions[i].QuestionText</label>
+                    <div class="col-12">
+                        <div id="map" class="map"></div>
+                        @Html.TextBoxFor(m => @Model.Questions[i].AnswerText, new { @class = "form-control form-control-lg data-readonly", @readOnly = "true", @required = "required" })
+                    </div>
+                    <span asp-validation-for="@Model.Questions[i].QuestionText" class="text-danger"></span>
+                    <hr>
+
+                }
+                else if (Model.Questions[i].QuestionType == "Rate")
+                {
+                    <label asp-for="Questions[i].QuestionText" class="h3 col-md-12 col-sm-12 col-xs-12">@Model.Questions[i].QuestionText</label>
+                    <table class="table">
+                        <tr>
+                            <td></td>
+                            @for (int j = 0; j < Model.Questions[i].Options.Count(); j++)
+                            {
+                                <td>
+                                    <label class="h5 form-check-label option-lable">@Model.Questions[i].Options[j].OptionText</label>
+                                </td>
+                            }
+                        </tr>
+                        @for (int j = 0; j < Model.Questions[i].SubQuestions.Count(); j++)
+                        {
+                            <tr>
+                                <td>
+                                    <label class="h5 form-check-label option-lable" for="@Model.Questions[i].SubQuestions[j].QuestionText">@Model.Questions[i].SubQuestions[j].QuestionText</label>
+                                </td>
+                                @for (int k = 0; k < Model.Questions[i].Options.Count(); k++)
+                                {
+                                    <td class="required">
+                                        @Html.HiddenFor(m => m.Questions[i].SubQuestions[j].QuestionId)
+                                        @Html.RadioButtonFor(m => m.Questions[i].SubQuestions[j].SelectedId, Model.Questions[i].Options[k].OptionId, new { @required = "required" })
+                                    </td>
+                                }
+                            </tr>
+
+                        }
+                    </table>
+                    <span asp-validation-for="@Model.Questions[i].QuestionText" class="text-danger"></span>
+                    <hr>
+                }
+                else if (Model.Questions[i].QuestionType == "Rank")
+                {
+                    <label asp-for="Questions[i].QuestionText" class="h3 col-md-12 col-sm-12 col-xs-12">@Model.Questions[i].QuestionText</label>
+                    @Html.DropDownListFor(
+                                m => m.Questions[i].SelectedIds,
+                                new MultiSelectList(Model.Questions[i].Options, "OptionId", "OptionText"),
+                                new { @class = "form-control select2-selection", @multiple = "multiple", @required = "required" })
+                    <span asp-validation-for="@Model.Questions[i].QuestionText" class="text-danger"></span>
+
+                    <hr>
+                }
+            }
+            @Html.HiddenFor(m => m.SurveyStatus)
+
+            <div class="row form-group text-center">
+                <input type="submit" id="complete" value="Submit as completed" class="col-md-6 col-sm-12 col-xs-12 btn btn-primary btn-lg" onClick="setSurveyStatus(this)" />
+                <input type="submit" id="incomplete" value="Submit as incomplete" class="col-md-6 col-sm-12 col-xs-12 btn btn-danger btn-lg" onClick="setSurveyStatus(this)" formnovalidate>
+            </div>
+        </form>
+
+    </div>
+</div>
+<script>
+    function GetDateTime() {
+        var date = new Date();
+        var day = date.getUTCDate();       // yields date
+        var month = date.getUTCMonth() + 1;    // yields month (add one as '.getMonth()' is zero indexed)
+        var year = date.getUTCFullYear();  // yields year
+        var hour = date.getUTCHours();     // yields hours
+        var minute = date.getUTCMinutes(); // yields minutes
+        var second = date.getUTCSeconds(); // yields seconds
+
+        // After this construct a string with the above results as below
+        return day + "/" + month + "/" + year + " " + hour + ':' + minute + ':' + second;
+    }
+    function setStartTime() {
+        $('#StartTime').val(GetDateTime())
+    }
+    function setSurveyStatus(element) {
+        if (element.id == "complete") {
+            $('#SurveyStatus').val("Completed")
+        }
+        else if (element.id == "incomplete") {
+            $('#SurveyStatus').val("Incomplete")
+        }
+    }
+    function validateMyForm() {
+        $('#EndTime').val(GetDateTime())
+        if ($('#SurveyStatus').val() == "Completed") {
+            //if ($('div.checkbox-group.required :checkbox:checked').length == 0) {
+            //    alert("Please select atleast one option from Q15.")
+            //    event.preventDefault();
+            //}
+            //if ($("select :selected").length < 6) {
+            //    alert("Please select all options from Q11.")
+            //    event.preventDefault();
+            //}
+        }
+    }
+    $(document).ready(function () {
+        setStartTime();
+    })
+
+</script>
+

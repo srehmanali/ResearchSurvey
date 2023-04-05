@@ -1,0 +1,78 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using CoreDomain.DataModels.Internal
+@inject SignInManager<ApplicationUser> signInManager
+@inject UserManager<ApplicationUser> userManager
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+<div class="survey-info-wrapper display-4">
+    <div>Name</div>
+    <div>Time</div>
+    <div>Date</div>
+    <div>Location</div>
+    @if (signInManager.IsSignedIn(User))
+    {
+    <div>@userManager.GetUserAsync(User).Result.FirstName @userManager.GetUserAsync(User).Result.LastName</div>
+    <div>@string.Format("{0:hh:mm:ss tt}", DateTime.UtcNow.AddHours(4))</div>
+    <div>@string.Format("{0:dd MMM yyyy}", DateTime.UtcNow.AddHours(4))</div>
+    <div>@userManager.GetUserAsync(User).Result.AssignedLocation</div>
+    <script>
+        function initMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+                        const myLatlng = { lat: pos.lat, lng: pos.lng };
+                        $('#LatLong').val(myLatlng.lat + ", " + myLatlng.lng)
+                        $('.map').each(function (index, Element) {
+                            //const map_dom = document.getElementsByClassName(Element);
+                            const map = new google.maps.Map(Element, {
+                                zoom: 17,
+                                center: myLatlng,
+                            });
+                            // Create the initial InfoWindow.
+                            let infoWindow = new google.maps.InfoWindow({
+                                content: "Click the map to get Lat/Lng!",
+                                position: myLatlng,
+                            });
+
+                            infoWindow.open(map);
+                            // Configure the click listener.
+                            map.addListener("click", (mapsMouseEvent) => {
+                                // Close the current InfoWindow.
+                                infoWindow.close();
+                                // Create a new InfoWindow.
+                                infoWindow = new google.maps.InfoWindow({
+                                    position: mapsMouseEvent.latLng,
+                                });
+                                const position = mapsMouseEvent.latLng.toJSON()
+                                infoWindow.setContent(
+                                    JSON.stringify(position, null, 2)
+                                );
+                                $(this).siblings('input').val(position.lat + ", " + position.lng)
+                                //mapTextbox.value(mapsMouseEvent.latLng.toJSON())
+                                infoWindow.open(map);
+
+                            });
+                        });
+                    });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDr3cV-G23F1Fmyo_k6XaogOfw_-uYwsbg&callback=initMap"></script>
+}
+else
+{
+    <div>Unknown User</div>
+    <div>@string.Format("{0:hh:mm:ss tt}", DateTime.UtcNow.AddHours(4))</div>
+    <div>@string.Format("{0:dd MMM yyyy}", DateTime.UtcNow.AddHours(4))</div>
+    <div>Unknown Location</div>
+}
+</div>

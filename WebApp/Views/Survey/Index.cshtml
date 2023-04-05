@@ -1,0 +1,12 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="text-center">
+    <h1 class="display-1">Introduction</h1>
+    <p><strong>Mamdouh</strong> please provide some data to insert here..</p>
+    @*<a href="/Survey/StartSurvey" class="btn btn-lg btn-primary">Start Survey</a>*@
+    <input type="button" value="Start Survey" class="btn btn-lg btn-primary" onclick='window.location.href = "@Url.Action("Index", "Home")"'/>
+</div>
+
